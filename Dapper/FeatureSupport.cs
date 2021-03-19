@@ -11,6 +11,7 @@ namespace Dapper
         private static readonly FeatureSupport
             Default = new FeatureSupport(false),
             Postgres = new FeatureSupport(true),
+            Redshift = new FeatureSupport(false),
             ClickHouse = new FeatureSupport(true);
 
         /// <summary>
@@ -20,7 +21,11 @@ namespace Dapper
         public static FeatureSupport Get(IDbConnection connection)
         {
             string name = connection?.GetType().Name;
-            if (string.Equals(name, "npgsqlconnection", StringComparison.OrdinalIgnoreCase)) return Postgres;
+            if (string.Equals(name, "npgsqlconnection", StringComparison.OrdinalIgnoreCase))
+            {
+                if (connection.ConnectionString.ToLower().Contains("redshift")) return Redshift;
+                else return Postgres;
+            }
             if (string.Equals(name, "clickhouseconnection", StringComparison.OrdinalIgnoreCase)) return ClickHouse;
             return Default;
         }
